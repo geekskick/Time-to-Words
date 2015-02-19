@@ -95,7 +95,6 @@ switch(time[0]){
                 break;
             case 5:
                 strcpy(strMinP1,"quarter");
-                //strcpy(strMinutes,"");
                 *minsTest = FALSE;
                 break;
             case 6:
@@ -125,7 +124,6 @@ switch(time[0]){
         break;
     case 4:
         strcpy(strMinP1,"quarter");
-       // strcpy(strMinutes,"");
         *minsTest = FALSE;
         break;
     case 5:
