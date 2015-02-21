@@ -11,15 +11,19 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
+
+//macro gets the number of elements in an array
+#define NUMELEMS(x) (sizeof(x)/sizeof(x[0]))
 
 #define TRUE 1
 #define FALSE 0
 
-void unitToWords(int number, char str[]);
+//void unitToWords(int number, char str[]);
 void getTime(int* hours, int*minutes, int *minutescopy,int*hourcopy);
-void testPrint(int *hours, int *minutes);
+//void testPrint(int *hours, int *minutes);
 void splitTime(int splitTime[],int *minutes);
-void minutesToWords(int time[],char strMinP1[], char strMinP2[],char *minsTest);
+//void minutesToWords(int time[],char strMinP1[], char strMinP2[],char *minsTest);
 
 
 int main() {
@@ -29,161 +33,73 @@ int main() {
     //Points to ints
     int *pHours = &initialHours, *pMins = &initialMinutes, *pMinsCopy = &minutes, *pHourCopy = &hour;
     
-    //arrays of ints
-    int time[2] = {0,0}; // array used for holding minutes
-    //          tens,units}
+    int minutes_digits[2] = {0,0}; // array used for holding minutes
+    //                   {tens,units}
     
-    //hours, then the two parts of minutes phrase, strDir == past/to the hour, whether to display minutes or not
-    char strHours[10], strMinP1[10], strMinP2[10],strDir[] = "past", minsTest = TRUE;
+    //strngs for: hours, then the two parts of minutes phrase ie "twenty+one",
+    //str_dir == past/to the hour, finally whether to display minutes or not
+    char str_hours[10], str_minutesp1[10], str_minutesp2[10],str_dir[] = "past", minsTest = TRUE;
     
-    //pointer to a char
-    char *pMinsTest = &minsTest;
+    //LUTs for the different words, 0th element must be in there for certain cases in which I don't want anything to be displayed
+    //such as when you don't want 'zero one minutes ...' displayed
+    const char *tenminuteswords[]={"\0","twenty","thirty","fourty","fifty"};
+    const char *unitswords[] = {"\0","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"};
+    const char *teenswords[] = {"\0","ten","eleven","twelve","thirteen","fourteen","quarter","sixteen","seventeen","eighteen","nineteen"};
     
     //Do while ensures user enters a valid time
-    do{
+    do {
     // pass the function the address of the variables
     getTime(pHours ,pMins,pMinsCopy,pHourCopy);
-    }while(initialHours >12  || initialHours < 1 || initialMinutes <0 || initialMinutes >59);
+    } while ( initialHours > 12  || initialHours < 1 || initialMinutes < 0 || initialMinutes > 59) ;
     
     //test to see if its a 'something to' or a 'something past', invert the number is it's a 'something to'
     if (initialMinutes>30){
         minutes = 60-initialMinutes;
         hour+=1;
-        strcpy(strDir, "to");
+        strcpy(str_dir, "to");
     }
         
     //split the time into its component parts
-    splitTime(time,pMinsCopy);
+    splitTime(minutes_digits,pMinsCopy);
 
     // turn the hour value into words
-    unitToWords(hour, strHours);
+    strcpy(str_hours,unitswords[hour]);
     
-    //turn the minutes into words
-    minutesToWords(time,strMinP1, strMinP2, pMinsTest);
+    //assert breaks out of program if i'm trying to access an element which is too high in array, ie element 15 of a 9 long array
+    assert(minutes_digits[0]<=NUMELEMS(tenminuteswords)+2);
+    assert(minutes_digits[1]<=NUMELEMS(unitswords));
+    
+    //if it's a 'teen' value
+    if(minutes_digits[0] == 1){
+        //makes sure the word 'minutes' isnt displayed if it's a 'quarter' past or to
+        if (minutes_digits[1] == 5 || minutes_digits[1]==0){
+            minsTest=FALSE;
+        }
+        //needs to be +1 to accounnt for 'blank' element of LUT
+        strcpy(str_minutesp1,teenswords[minutes_digits[1]+1]);
+        minutes_digits[1] = 0;
+    }
+    
+    //not a 'teen' value
+    else{
+        strcpy(str_minutesp1,tenminuteswords[minutes_digits[0]]);
+    }
+    
+    //convert the 'units' part of the minutes to a word
+    strcpy(str_minutesp2,unitswords[minutes_digits[1]]);
     
     //if time is on the hour
-    if(initialMinutes==0)
-        printf("The time is %s o'clock.", strHours);
+    if(initialMinutes==0){
+        printf("The time is %s o'clock.", str_hours);
+    }
     
     // if its a half hour
-    else if (initialMinutes == 30)
-        printf("The time is half past %s", strHours);
-    
-    else
-    //Display time in desired format
-        printf("The time is %s %s %s %s %s.",strMinP1, strMinP2,minsTest==TRUE?"minutes":"",strDir,strHours);
-    
-}
-
-
-void minutesToWords(int time[], char strMinP1[], char strMinP2[],char *minsTest)
-{
-switch(time[0]){
-    case 1:
-        switch(time[1]){
-            case 1:
-                strcpy(strMinP1,"eleven");
-                break;
-            case 2:
-                strcpy(strMinP1,"twelve");
-                break;
-            case 3:
-                strcpy(strMinP1,"thirteen");
-                break;
-            case 4:
-                strcpy(strMinP1,"fourteen");
-                break;
-            case 5:
-                strcpy(strMinP1,"quarter");
-                *minsTest = FALSE;
-                break;
-            case 6:
-                strcpy(strMinP1,"sixteen");
-                break;
-            case 7:
-                strcpy(strMinP1,"seventeen");
-                break;
-            case 8:
-                strcpy(strMinP1,"seventeen");
-                break;
-            case 9:
-                strcpy(strMinP1,"nineteen");
-                break;
-            case 0:
-                strcpy(strMinP1, "ten");
-                break;
-        }
-        
-        time[1] = 0;
-        break;
-    case 2:
-        strcpy(strMinP1,"twenty");
-        break;
-    case 3:
-        strcpy(strMinP1,"thirty");
-        break;
-    case 4:
-        strcpy(strMinP1,"quarter");
-        *minsTest = FALSE;
-        break;
-    case 5:
-        strcpy(strMinP1,"fifty");
-        break;
-    case 0:
-        strcpy(strMinP1,"");
-        break;
-    default:
-        printf("Error");
-        break;
+    else if (initialMinutes == 30){
+        printf("The time is half past %s", str_hours);
     }
-    unitToWords(time[1],  strMinP2);
-}
-
-
-//LUT for units to their word equivelents
-void unitToWords(int number, char str[10]){
-    switch(number){
-        case 1:
-            strcpy(str,"one");
-            break;
-        case 2:
-            strcpy(str,"two");
-            break;
-        case 3:
-            strcpy(str,"three");
-            break;
-        case 4:
-            strcpy(str,"four");
-            break;
-        case 5:
-            strcpy(str,"five");
-            break;
-        case 6:
-            strcpy(str,"six");
-            break;
-        case 7:
-            strcpy(str,"seven");
-            break;
-        case 8:
-            strcpy(str,"eight");
-            break;
-        case 9:
-            strcpy(str,"nine");
-            break;
-        case 10:
-            strcpy(str,"ten");
-            break;
-        case 11:
-            strcpy(str,"eleven");
-            break;
-        case 12:
-            strcpy(str,"twelve");
-            break;
-        case 0:
-            strcpy(str,"");
-            break;
-        default:
-            break;
+    
+    else{
+        printf("The time is %s %s %s %s %s.",str_minutesp1, str_minutesp2,minsTest==TRUE?"minutes":"",str_dir,str_hours);
     }
 }
 
@@ -201,24 +117,18 @@ void splitTime(int splitTime[2], int *minutes){
         //remainder will now be in the initial minutes
         splitTime[0] = divideTen;
     }
-    splitTime[1] = *minutes;
+    splitTime[1] = *minutes; //starred because im referring to the contents rather than the address
 }
 
 // stars indicate they are addresses
 void getTime(int* hours, int*minutes, int *minutescopy,int*hourcopy){
     printf("Hours:");
-    scanf("%i",hours);
-    *hourcopy = *hours;
+    scanf("%i",hours); //no need to use & because it's already an address
 
     printf("Minutes:");
     scanf("%i",minutes); //no need to use & because it's already an address
     
-    //make a copy of the user imput for manipulating
-    *minutescopy = *minutes; //start because im referring to the contents rather than the address
-}
-
-void testPrint(int *hours, int *minutes)
-{
-    printf("%i, %i", *hours, *minutes); //Stars are need to turn it from an address to the contents of the address
-
+    //make a copy of the user input for manipulating
+    *hourcopy = *hours;
+    *minutescopy = *minutes; //starred because im referring to the contents rather than the address
 }
