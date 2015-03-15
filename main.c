@@ -42,7 +42,7 @@ int main() {
     
     //LUTs for the different words, 0th element must be in there for certain cases in which I don't want anything to be displayed
     //such as when you don't want 'zero one minutes ...' displayed
-    const char *tenminuteswords[]={"\0","twenty","thirty","fourty","fifty"};
+    const char *tenminuteswords[]={"\0","\0","twenty","thirty","fourty","fifty"};
     const char *unitswords[] = {"\0","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve"};
     const char *teenswords[] = {"\0","ten","eleven","twelve","thirteen","fourteen","quarter","sixteen","seventeen","eighteen","nineteen"};
     
@@ -99,7 +99,7 @@ int main() {
     }
     
     else{
-        printf("The time is %s %s %s %s %s.",str_minutesp1, str_minutesp2,minsTest==TRUE?"minutes":"",str_dir,str_hours);
+        printf("The time is %s %s %s %s %s.\n",str_minutesp1, str_minutesp2,minsTest==TRUE?"minutes":"",str_dir,str_hours);
     }
 }
 
